@@ -21,9 +21,10 @@ sed -i 's/192.168.1.1/192.168.3.2/g' package/base-files/files/bin/config_generat
 # ------------------------------- Main source ends -------------------------------
 
 # ------------------------------- Other started -------------------------------
-
+rm -rf package/luci-app-amlogic
 git clone --depth=1 https://github.com/ophub/luci-app-amlogic.git package/luci-app-amlogic
 git clone --depth=1 https://github.com/nikkinikki-org/OpenWrt-nikki.git package/luci-app-nikki
+git clone --depth=1 https://github.com/stevenjoezhang/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # Apply patch
 # git apply ../config/patches/{0001*,0002*}.patch --directory=feeds/luci
