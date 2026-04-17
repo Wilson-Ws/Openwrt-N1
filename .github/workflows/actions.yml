@@ -182,7 +182,6 @@ jobs:
           # Clone the source code repository
           git clone -q --single-branch --depth=1 --branch=${REPO_BRANCH} ${REPO_URL} openwrt
           ln -sf /builder/openwrt ${{ github.workspace }}/openwrt
-          ln -sf /builder/openwrt /home/runner/work/_actions/Wilson-Ws/Openwrt-N1/main/openwrt
 
           # Export build metadata
           echo "build_tag=OpenWrt_${REPO_NAME}_${branch_code}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
