@@ -151,7 +151,7 @@ jobs:
 
       - name: Clone source code [ ${{ inputs.source_branch }}_${{ inputs.openwrt_branch }} ]
         id: codes
-        working-directory: /workdir
+        working-directory: /builder
         if: ${{ steps.init.outputs.status == 'success' && !cancelled() }}
         run: |
           # Set up compilation source code
