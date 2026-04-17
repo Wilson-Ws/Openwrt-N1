@@ -171,11 +171,16 @@ jobs:
               exit 1
           fi
 
-          # Set up compilation source code
-          if [[ "${{ inputs.openwrt_branch }}" == "main" || "${{ inputs.openwrt_branch }}" == "master" ]]; then
-              echo "branch_code=$openwrt_branch" >> $GITHUB_OUTPUT
-          elif
-              echo "branch_code=${openwrt_branch#*-}" >> $GITHUB_OUTPUT
+          # Set up branch code
+          if [[ "${{ inputs.openwrt_branch }}" == *"main"* ]]; then
+              BRANCH_CODE="${{ inputs.openwrt_branch }}"
+          elif [[ "${{ inputs.openwrt_branch }}" == *"master"* ]]; then
+              BRANCH_CODE="${{ inputs.openwrt_branch }}"
+          elif [[ "${{ inputs.openwrt_branch }}" == *"openwrt"* ]]; then
+              BRANCH_CODE="${openwrt_branch#*-}"
+          else
+              echo "Unknown branch code."
+              exit 1
           fi
 
           # Clone the source code repository
@@ -183,7 +188,7 @@ jobs:
           ln -sf /builder/openwrt ${{ github.workspace }}/openwrt
 
           # Export build metadata
-          echo "build_tag=OpenWrt_${REPO_NAME}_${branch_code}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
+          echo "build_tag=OpenWrt_${REPO_NAME}_${BRANCH_CODE}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
           echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nREPO_NAME: [ ${REPO_NAME} ]"
           df -hT ${PWD}
           echo "REPO_URL=${REPO_URL}" >> ${GITHUB_ENV}
