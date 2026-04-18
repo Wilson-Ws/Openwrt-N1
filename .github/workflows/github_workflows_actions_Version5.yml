@@ -1,4 +1,4 @@
-name: Openwrt-N1
+name: Openwrt-N1-Cache
 
 on:
   repository_dispatch:
