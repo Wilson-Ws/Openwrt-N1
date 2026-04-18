@@ -60,15 +60,6 @@ on:
           - stable
           - flippy
           - beta
-      openwrt_ip:
-        description: "Set OpenWrt default IP address."
-        required: false
-        default: "192.168.3.2"
-      use_ccache:
-        description: "Auto use ccache."
-        required: false
-        default: true
-        type: boolean
       openwrt_storage:
         description: "Select image storage type."
         required: false
@@ -156,40 +147,24 @@ jobs:
           # Set up compilation source code
           if [[ "${{ inputs.source_branch }}" == *"openwrt"* ]]; then
               REPO_URL="https://github.com/openwrt/openwrt"
-              REPO_BRANCH="${{ inputs.openwrt_branch }}"
-              REPO_NAME="official"
           elif [[ "${{ inputs.source_branch }}" == *"lede"* ]]; then
               REPO_URL="https://github.com/coolsnowwolf/lede"
-              REPO_BRANCH="${{ inputs.openwrt_branch }}"
-              REPO_NAME="lede"
           elif [[ "${{ inputs.source_branch }}" == *"immortalwrt"* ]]; then
               REPO_URL="https://github.com/immortalwrt/immortalwrt"
-              REPO_BRANCH="${{ inputs.openwrt_branch }}"
-              REPO_NAME="immortalwrt"
           else
               echo "Unknown source code repository."
               exit 1
           fi
-
-          # Set up branch code
-          if [[ "${{ inputs.openwrt_branch }}" == *"main"* ]]; then
-              BRANCH_CODE="${{ inputs.openwrt_branch }}"
-          elif [[ "${{ inputs.openwrt_branch }}" == *"master"* ]]; then
-              BRANCH_CODE="${{ inputs.openwrt_branch }}"
-          elif [[ "${{ inputs.openwrt_branch }}" == *"openwrt"* ]]; then
-              BRANCH_CODE="${openwrt_branch#*-}"
-          else
-              echo "Unknown branch code."
-              exit 1
-          fi
+          
+          REPO_BRANCH="${{ inputs.openwrt_branch }}"
+          REPO_NAME="${{ inputs.source_branch }}"
 
           # Clone the source code repository
           git clone -q --single-branch --depth=1 --branch=${REPO_BRANCH} ${REPO_URL} openwrt
           ln -sf /builder/openwrt ${{ github.workspace }}/openwrt
-          ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
 
           # Export build metadata
-          echo "build_tag=OpenWrt_${REPO_NAME}_${BRANCH_CODE}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
+          echo "build_tag=${REPO_NAME}_${REPO_BRANCH}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
           echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nREPO_NAME: [ ${REPO_NAME} ]"
           df -hT ${PWD}
           echo "REPO_URL=${REPO_URL}" >> ${GITHUB_ENV}
@@ -216,7 +191,7 @@ jobs:
           [[ -e "${CONFIG_FILE}" ]] && cp -f ${CONFIG_FILE} openwrt/.config
           chmod +x ${DIY_P2_SH}
           cd openwrt/
-          ${{ github.workspace }}/${DIY_P2_SH} "${{ inputs.openwrt_ip }}" "${{ inputs.use_ccache }}"
+          ${{ github.workspace }}/${DIY_P2_SH}
 
       - name: Download package
         id: package
@@ -242,14 +217,6 @@ jobs:
           [[ -z "${source_hash}" || "${source_hash}" == "null" ]] && source_hash="${{ github.sha }}"
           echo "source_hash=${source_hash}" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}
-
-      - name: Cache ccache
-        uses: actions/cache@v5
-        with:
-          path: /builder/openwrt/.ccache
-          key: openwrt-${{ env.REPO_NAME }}-${{ env.source_hash }}
-          restore-keys: |
-            openwrt-${{ env.REPO_NAME }}-
 
       - name: Compile the OpenWrt firmware
         id: compile
@@ -292,7 +259,6 @@ jobs:
           makeLatest: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-
       - name: Packaging OpenWrt
         if: ${{ steps.clean.outputs.status == 'success' && !cancelled() }}
         uses: ophub/amlogic-s9xxx-openwrt@main
@@ -324,5 +290,10 @@ jobs:
             - Login to OpenWrt → `System` → `Amlogic Service` → `Install OpenWrt`
             ### OpenWrt source code
             - [${{ env.REPO_NAME }}](${{ env.REPO_URL }}/tree/${{ env.REPO_BRANCH }})
-            ### Applicable Platform
-            - 🐧 `arm64`
+
+      - name: Remove old Releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 3
+          delete_tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
