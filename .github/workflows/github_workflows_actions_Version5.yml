@@ -60,10 +60,6 @@ on:
           - stable
           - flippy
           - beta
-      openwrt_ip:
-        description: "Set OpenWrt default IP address."
-        required: false
-        default: "192.168.3.2"
       use_ccache:
         description: "Auto use ccache."
         required: false
@@ -176,25 +172,13 @@ jobs:
               exit 1
           fi
 
-          # Set up branch code
-          if [[ "${{ inputs.openwrt_branch }}" == *"main"* ]]; then
-              BRANCH_CODE="${{ inputs.openwrt_branch }}"
-          elif [[ "${{ inputs.openwrt_branch }}" == *"master"* ]]; then
-              BRANCH_CODE="${{ inputs.openwrt_branch }}"
-          elif [[ "${{ inputs.openwrt_branch }}" == *"openwrt"* ]]; then
-              BRANCH_CODE="${openwrt_branch#*-}"
-          else
-              echo "Unknown branch code."
-              exit 1
-          fi
-
           # Clone the source code repository
           git clone -q --single-branch --depth=1 --branch=${REPO_BRANCH} ${REPO_URL} openwrt
           ln -sf /builder/openwrt ${{ github.workspace }}/openwrt
           ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
 
           # Export build metadata
-          echo "build_tag=OpenWrt_${REPO_NAME}_${BRANCH_CODE}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
+          echo "build_tag=${REPO_NAME}_${REPO_BRANCH}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
           echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nREPO_NAME: [ ${REPO_NAME} ]"
           df -hT ${PWD}
           echo "REPO_URL=${REPO_URL}" >> ${GITHUB_ENV}
@@ -221,7 +205,7 @@ jobs:
           [[ -e "${CONFIG_FILE}" ]] && cp -f ${CONFIG_FILE} openwrt/.config
           chmod +x ${DIY_P2_SH}
           cd openwrt/
-          ${{ github.workspace }}/${DIY_P2_SH} "${{ inputs.openwrt_ip }}" "${{ inputs.use_ccache }}"
+          ${{ github.workspace }}/${DIY_P2_SH}
 
       - name: Download package
         id: package
