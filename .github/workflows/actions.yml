@@ -60,14 +60,6 @@ on:
           - stable
           - flippy
           - beta
-      openwrt_storage:
-        description: "Select image storage type."
-        required: false
-        default: "save"
-        type: choice
-        options:
-          - save
-          - temp
       builder_name:
         description: "Set OpenWrt builder signature."
         required: false
@@ -164,7 +156,7 @@ jobs:
           ln -sf /builder/openwrt ${{ github.workspace }}/openwrt
 
           # Export build metadata
-          echo "build_tag=${REPO_NAME}_${REPO_BRANCH}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
+          echo "build_tag=${REPO_NAME}_${REPO_BRANCH}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
           echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nREPO_NAME: [ ${REPO_NAME} ]"
           df -hT ${PWD}
           echo "REPO_URL=${REPO_URL}" >> ${GITHUB_ENV}
@@ -290,10 +282,3 @@ jobs:
             - Login to OpenWrt → `System` → `Amlogic Service` → `Install OpenWrt`
             ### OpenWrt source code
             - [${{ env.REPO_NAME }}](${{ env.REPO_URL }}/tree/${{ env.REPO_BRANCH }})
-
-      - name: Remove old Releases
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        with:
-          keep_latest: 3
-          delete_tags: true
-          token: ${{ secrets.GITHUB_TOKEN }}
