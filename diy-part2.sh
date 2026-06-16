@@ -21,9 +21,6 @@ rm -rf package/luci-app-amlogic
 git clone --depth=1 https://github.com/ophub/luci-app-amlogic.git package/luci-app-amlogic
 git clone --depth=1 https://github.com/nikkinikki-org/OpenWrt-nikki.git package/luci-app-nikki
 
-# Fix potential LuCI compatibility issues with OpenWrt 25.12
-find package/luci-app-amlogic -name "*.lua" -type f -exec sed -i 's/module("luci\.cbi"/require("luci.cbi")/g' {} \; 2>/dev/null || true
-
 # Apply patch
 # git apply ../config/patches/{0001*,0002*}.patch --directory=feeds/luci
 #
