@@ -88,10 +88,6 @@ on:
           - yourname
 
 env:
-  FEEDS_CONF: config/${{ inputs.source_branch }}_${{ inputs.openwrt_branch }}/feeds.conf.default
-  CONFIG_FILE: .config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part2.sh
   TZ: Asia/Hong_Kong
   CCACHE_DIR: /builder/openwrt/.ccache
 
@@ -103,6 +99,12 @@ jobs:
       contents: write
 
     name: build-${{ inputs.openwrt_branch }}
+
+    env:
+      FEEDS_CONF: config/${{ inputs.source_branch }}_${{ inputs.openwrt_branch }}/feeds.conf.default
+      CONFIG_FILE: .config
+      DIY_P1_SH: diy-part1.sh
+      DIY_P2_SH: diy-part2.sh
 
     steps:
       - name: Checkout
@@ -129,7 +131,7 @@ jobs:
           sudo -E apt-get clean
           sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
           sudo rm -rf ~/{.cargo,.dotnet,.rustup}
-          sudo -E timedatectl set-timezone "${TZ:-Etc/UTC}"
+          sudo -E timedatectl set-timezone "${TZ:-Asia/Hong_Kong}"
           sudo -E ntpdate ntp.ubuntu.com 0.pool.ntp.org || true
           sudo -E timedatectl set-ntp true
           date -u
